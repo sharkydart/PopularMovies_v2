@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
+
 import static com.udacityproject.cmcmc.popularmovies.database.FavoritesContract.FavoritesEntry;
 import static com.udacityproject.cmcmc.popularmovies.database.FavoritesContract.FavoritesEntry.TABLE_NAME;
 
@@ -78,7 +80,9 @@ public class FavoritesContentProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection,
+                        @Nullable String selection, @Nullable String[] selectionArgs,
+                        @Nullable String sortOrder) {
         // Get access to underlying database (read-only for query)
         final SQLiteDatabase theDb = mFavoritesDbHelper.getReadableDatabase();
 
@@ -94,21 +98,21 @@ public class FavoritesContentProvider extends ContentProvider {
                         projection,
                         selection,
                         selectionArgs,
-                        null,
-                        null,
-                        sortOrder);
+                        null,null, sortOrder);
                 break;
             case FAVORITE_WITH_ID:
-                String id = uri.getPathSegments().get(1);
-                String mSelection = "_id=?";
-                String[] mSelectionArgs = new String[]{id};
+//                String id = uri.getPathSegments().get(1);
+                String theSelection = FavoritesEntry.COLUMN_MOVIEID + "=?";
+//                String[] mSelectionArgs = new String[]{id};
+//                if(selection != null && selectionArgs != null){
+//                    mSelection = selection;
+//                    mSelectionArgs = selectionArgs;
+//                }
                 retCursor = theDb.query(TABLE_NAME,
                         projection,
-                        mSelection,
-                        mSelectionArgs,
-                        null,
-                        null,
-                        sortOrder);
+                        theSelection,
+                        selectionArgs,
+                        null,null, sortOrder);
                 break;
             // Default exception
             default:
@@ -134,12 +138,11 @@ public class FavoritesContentProvider extends ContentProvider {
         int theDeleteCount;
         switch (match){
             case FAVORITE_WITH_ID:
-                String theID = uri.getPathSegments().get(1);
-                String theSelection = FavoritesEntry._ID + "=?";
-                String[] theSelectionArgs = new String[]{theID};
-                theDeleteCount = theDB.delete(TABLE_NAME,
-                        theSelection,
-                        theSelectionArgs);
+//                String theID = uri.getPathSegments().get(1);
+                String theSelection = FavoritesEntry.COLUMN_MOVIEID + "=?";
+//                String[] theSelectionArgs = new String[]{theID};
+
+                theDeleteCount = theDB.delete(TABLE_NAME, theSelection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

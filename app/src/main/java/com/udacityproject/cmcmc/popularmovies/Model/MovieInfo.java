@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MovieInfo{
+    private int _rowId;
     private int vote_count;
     private int id;
     private boolean video;
@@ -174,4 +175,11 @@ public class MovieInfo{
         this.release_date = release_date;
     }
 
+    public int get_rowId() {
+        return _rowId;
+    }
+
+    public void set_rowId(int _rowId) {
+        this._rowId = _rowId;
+    }
 }

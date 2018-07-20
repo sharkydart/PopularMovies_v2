@@ -103,7 +103,7 @@ public class MainDiscovery extends AppCompatActivity {
                 return null;
             }
             if(params[0].equals(MainDiscovery.this.getString(R.string.load_db_favorites))){
-                Log.d("fart", "Load from database!");
+//                Log.d("fart", "Load from database!");
                 return params[0];
             }else{
                 mMoviePostersAdapter.useFavoritesDb(false);
@@ -137,7 +137,7 @@ public class MainDiscovery extends AppCompatActivity {
         protected void onPostExecute(String movieData) {
             if (movieData != null) {
                 if(movieData.equals(MainDiscovery.this.getString(R.string.load_db_favorites))){
-                    Log.d("fart", "Movie Posters Adapter should load based off of DB list of movie_ids");
+//                    Log.d("fart", "Movie Posters Adapter should load based off of DB list of movie_ids");
                     mMoviePostersAdapter.useFavoritesDb(true);
                     mMoviePostersAdapter.swapCursor(getFavoritesFromDb());
                     mMoviePostersAdapter.notifyDataSetChanged();
@@ -245,6 +245,7 @@ public class MainDiscovery extends AppCompatActivity {
 
     private void launchMovieDetailsActivity(int position) {
         Intent intent = new Intent(this, MovieDetailsActivity.class);
+        intent.putExtra(MovieDetailsActivity._ID, ((MovieInfo)mMoviePostersAdapter.getItem(position)).get_rowId());
         intent.putExtra(MovieDetailsActivity.MOVIE_ID, ((MovieInfo)mMoviePostersAdapter.getItem(position)).getId());
         intent.putExtra(MovieDetailsActivity.MOVIE_VOTE_AVERAGE, ((MovieInfo)mMoviePostersAdapter.getItem(position)).getVote_average());
         intent.putExtra(MovieDetailsActivity.MOVIE_TITLE, ((MovieInfo)mMoviePostersAdapter.getItem(position)).getTitle());
@@ -255,21 +256,6 @@ public class MainDiscovery extends AppCompatActivity {
     }
 
     private Cursor getFavoritesFromDb(){
-        String columns[] = {
-                FavoritesEntry.COLUMN_TITLE,
-                FavoritesEntry.COLUMN_MOVIEID,
-                FavoritesEntry.COLUMN_VOTEAVG,
-                FavoritesEntry.COLUMN_RELEASEDATE,
-                FavoritesEntry.COLUMN_POSTERPATH,
-                FavoritesEntry.COLUMN_OVERVIEW
-        };
-        return mFavoritesDb.query(
-                FavoritesEntry.TABLE_NAME,
-                columns,
-                null,
-                null,
-                null,
-                null,
-                FavoritesEntry.COLUMN_TITLE);
+        return getContentResolver().query(FavoritesEntry.CONTENT_URI, null, null, null, FavoritesEntry.COLUMN_TITLE);
     }
 }

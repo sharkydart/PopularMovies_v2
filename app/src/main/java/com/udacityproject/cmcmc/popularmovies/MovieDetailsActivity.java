@@ -47,6 +47,7 @@ import java.util.Locale;
 import java.util.Scanner;
 
 public class MovieDetailsActivity extends AppCompatActivity {
+    public static final String _ID = "_id";
     public static final String MOVIE_ID = "movie_id";
     public static final String MOVIE_VOTE_AVERAGE = "movie_vote_average";
     public static final String MOVIE_TITLE = "movie_title";
@@ -62,6 +63,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private List<MovieReview> mReviews;
     private ArrayAdapter<MovieReview> mReviewsAdapter;
     private int mMovieId;
+    private int m_Id;
     private String mMovieTitle;
     private double mMovieVoteAvg;
     private String mMovieReleaseDate;
@@ -91,6 +93,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             TextView tvPlotSynopsis = (TextView) findViewById(R.id.tvPlotSynopsis);
             ImageView ivMoviePoster = (ImageView) findViewById(R.id.ivMoviePoster);
 
+            m_Id = intent.getIntExtra(_ID, -99);
             mMovieId = intent.getIntExtra(MOVIE_ID, -99);
             if (mMovieId == -99) {
                 closeOnError();
@@ -131,16 +134,16 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     if(mFavorited) {
                         //delete from DB
-                        Log.d("fart", "Make MovieID Un-Favorited: " + mMovieId);
-                        if(unFavoriteMovieFromDb())
-                            Log.d("fart", "Un-Favorited that movie!");
-                        else
-                            Log.d("fart", "nothing to unfavorite...");
+//                        Log.d("fart", "Make MovieID Un-Favorited: " + mMovieId);
+//                        if(unFavoriteMovieFromDb())
+//                            Log.d("fart", "Un-Favorited that movie!");
+//                        else
+//                            Log.d("fart", "nothing to unfavorite...");
                         mFavStar.setImageResource(android.R.drawable.star_off);
                     }
                     else {
                         //put into DB
-                        Log.d("fart", "Make MovieID Favorited: " + mMovieId);
+//                        Log.d("fart", "Make MovieID Favorited: " + mMovieId);
                         addFavoritedMovie();
                         mFavStar.setImageResource(android.R.drawable.star_on);
                     }
@@ -340,29 +343,26 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     private boolean isMovieFavorited(){
-        Log.d("fart", "pull from db where: " + mMovieId + " exists");
-        String[] pullColumns = {FavoritesEntry.COLUMN_TITLE,
-                FavoritesEntry.COLUMN_MOVIEID,
-                FavoritesEntry.COLUMN_VOTEAVG,
-                FavoritesEntry.COLUMN_RELEASEDATE,
-                FavoritesEntry.COLUMN_POSTERPATH,
-                FavoritesEntry.COLUMN_OVERVIEW
-        };
-        String theWhereClause = FavoritesEntry.COLUMN_MOVIEID + " = ?";
-        String[] theWhereArgument = {Integer.toString(mMovieId)};
-        Cursor tempCursor = mFavoritesDb.query(FavoritesContract.FavoritesEntry.TABLE_NAME,
-                pullColumns,
-                theWhereClause,
-                theWhereArgument,
-                null,
-                null,
-                FavoritesContract.FavoritesEntry.COLUMN_TIMESTAMP);
-        tempCursor.moveToPosition(0);
-        int theCount = tempCursor.getCount();
-        tempCursor.close();
+        //convert id to a string in order to use with appendpath method of buildupon
+        String stringRowId = Integer.toString(m_Id);
+        //get uri and append the id to it
+        Uri itemUri = FavoritesEntry.CONTENT_URI;
+        itemUri = itemUri.buildUpon().appendPath(stringRowId).build();
+
+        String strMovieId = Integer.toString(mMovieId);
+        String[] argMovieId = {strMovieId};
+
+        Cursor tempCursor = getContentResolver().query(itemUri,null,null, argMovieId,null);
+        int theCount = 0;
+        if(tempCursor != null){
+            tempCursor.moveToPosition(0);
+            theCount = tempCursor.getCount();
+            tempCursor.close();
+        }
         return (theCount >= 1);
     }
-    private long addFavoritedMovie(){
+
+    private Uri addFavoritedMovie(){
         ContentValues cvObj = new ContentValues();
         //movie_id
         cvObj.put(FavoritesEntry.COLUMN_MOVIEID, mMovieId);
@@ -377,16 +377,24 @@ public class MovieDetailsActivity extends AppCompatActivity {
         //movie_overview
         cvObj.put(FavoritesEntry.COLUMN_OVERVIEW, mMovieOverview);
         //add to db
-//        Uri insertReturnUri = getContentResolver().insert(FavoritesEntry.CONTENT_URI, cvObj);
-//        if(insertReturnUri != null) {
-//            Toast.makeText(getBaseContext(), insertReturnUri.toString(), Toast.LENGTH_LONG).show();
-//        }
-
-        return mFavoritesDb.insert(FavoritesEntry.TABLE_NAME, null, cvObj);
+        return getContentResolver().insert(FavoritesEntry.CONTENT_URI, cvObj);
     }
+
     private boolean unFavoriteMovieFromDb(){
-        return (mFavoritesDb.delete(FavoritesEntry.TABLE_NAME,
-                FavoritesEntry.COLUMN_MOVIEID + " = " + mMovieId, null) > 0);
+        //convert id to a string in order to use with appendpath method of buildupon
+        String stringRowId = Integer.toString(m_Id);
+        //get uri and append the id to it
+        Uri itemUri = FavoritesEntry.CONTENT_URI;
+        itemUri = itemUri.buildUpon().appendPath(stringRowId).build();
+
+        //prep the args
+        String stringMovieId = Integer.toString(mMovieId);
+        String[] argMovieId = {stringMovieId};
+
+        //Delete a single row of data using a ContentResolver
+        return (getContentResolver().delete(itemUri, null, argMovieId) > 0);
+
+//        return (mFavoritesDb.delete(FavoritesEntry.TABLE_NAME,FavoritesEntry.COLUMN_MOVIEID + " = " + mMovieId, null) > 0);
     }
 
     private void clickedTrailer(Context context, String id){

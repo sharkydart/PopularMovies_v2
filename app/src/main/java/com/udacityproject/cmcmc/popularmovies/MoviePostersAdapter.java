@@ -62,6 +62,7 @@ public class MoviePostersAdapter extends BaseAdapter {
                         mDBCursor.getString(mDBCursor.getColumnIndex(FavoritesEntry.COLUMN_OVERVIEW)),
                         mDBCursor.getString(mDBCursor.getColumnIndex(FavoritesEntry.COLUMN_RELEASEDATE))
                 );
+                tempMovie.set_rowId(mDBCursor.getInt(mDBCursor.getColumnIndex(FavoritesEntry._ID)));
                 return tempMovie;
             }
             else{
