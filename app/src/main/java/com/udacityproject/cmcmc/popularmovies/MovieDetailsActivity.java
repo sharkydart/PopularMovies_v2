@@ -134,8 +134,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     if(mFavorited) {
                         //delete from DB
+                        unFavoriteMovieFromDb(); //set boolean checkSuccess =
 //                        Log.d("fart", "Make MovieID Un-Favorited: " + mMovieId);
-//                        if(unFavoriteMovieFromDb())
+//                        if(checkSuccess)
 //                            Log.d("fart", "Un-Favorited that movie!");
 //                        else
 //                            Log.d("fart", "nothing to unfavorite...");
