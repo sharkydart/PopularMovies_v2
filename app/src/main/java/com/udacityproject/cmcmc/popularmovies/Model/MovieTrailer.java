@@ -17,7 +17,7 @@ public class MovieTrailer implements Parcelable{
     private String type;
 
     //Parcelable Stuff
-    public MovieTrailer(Parcel in){
+    private MovieTrailer(Parcel in){
         String[] strData = new String[7];
         in.readStringArray(strData);
         this.id = strData[0];

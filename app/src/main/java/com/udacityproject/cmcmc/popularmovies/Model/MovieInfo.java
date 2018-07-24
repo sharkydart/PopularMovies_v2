@@ -28,7 +28,7 @@ public class MovieInfo implements Parcelable{
     private String overview;
     private String release_date;
 
-    public MovieInfo(Parcel in){
+    private MovieInfo(Parcel in){
         this._rowId = in.readInt();
         this.vote_count = in.readInt();
         this.id = in.readInt();

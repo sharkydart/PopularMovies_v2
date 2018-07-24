@@ -55,13 +55,15 @@ public class MovieDetailsActivity extends AppCompatActivity {
     public static final String MOVIE_POSTER_PATH = "movie_poster_path";
     public static final String MOVIE_OVERVIEW = "movie_overview";
     public static final String MOVIE_RELEASE_DATE = "movie_release_date";
+    private static final String TRAILERS_KEY = "trailers arraylist (parcelable)";
+    private static final String REVIEWS_KEY = "reviews arraylist (parcelable)";
     private ImageButton mFavStar;
     private boolean mFavorited;
     private SQLiteDatabase mFavoritesDb;
 
-    private List<MovieTrailer> mTrailers;
+    private ArrayList<MovieTrailer> mTrailers;
     private ArrayAdapter<MovieTrailer> mTrailersAdapter;
-    private List<MovieReview> mReviews;
+    private ArrayList<MovieReview> mReviews;
     private ArrayAdapter<MovieReview> mReviewsAdapter;
     private int mMovieId;
     private int m_Id;
@@ -82,8 +84,13 @@ public class MovieDetailsActivity extends AppCompatActivity {
         FavoritesDbHelper dbHelper = new FavoritesDbHelper(this);
         mFavoritesDb = dbHelper.getWritableDatabase();
 
-        mTrailers = new ArrayList<>();
-        mReviews = new ArrayList<>();
+        if(savedInstanceState == null){
+            mTrailers = new ArrayList<>();
+            mReviews = new ArrayList<>();
+        }else if(savedInstanceState.containsKey(TRAILERS_KEY) && savedInstanceState.containsKey(REVIEWS_KEY)){
+            mTrailers = savedInstanceState.getParcelableArrayList(TRAILERS_KEY);
+            mReviews = savedInstanceState.getParcelableArrayList(REVIEWS_KEY);
+        }
 
         Intent intent = getIntent();
         if (intent == null) {
@@ -181,11 +188,22 @@ public class MovieDetailsActivity extends AppCompatActivity {
             new FetchReviewsTask().execute(reviewPath);
         }
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList(TRAILERS_KEY, mTrailers);
+        outState.putParcelableArrayList(REVIEWS_KEY, mReviews);
+        super.onSaveInstanceState(outState);
+    }
+
     private class FetchTrailersTask extends AsyncTask<String,Void,String>{
 
         @Override
         protected String doInBackground(String... params) {
             if (params.length == 0) {return null;}
+
+            if(mTrailers.size() > 0)
+                return TRAILERS_KEY;
 
             try {
                 ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -210,22 +228,24 @@ public class MovieDetailsActivity extends AppCompatActivity {
         protected void onPostExecute(String trailersData) {
             if (trailersData != null) {
                 try {
-                    mTrailers.clear();
-                    JSONObject trailersJson = new JSONObject(trailersData);
-                    int id = trailersJson.getInt("id");
-                    JSONArray results = trailersJson.getJSONArray("results");
-                    for(int i=0; i<results.length(); i++) {
-                        JSONObject currentObj = results.getJSONObject(i);
-                        MovieTrailer tempTrailer = new MovieTrailer(currentObj);
-                        Log.d("fart", "trailer: " + tempTrailer.getName());
-                        mTrailers.add(tempTrailer);
+                    if(!trailersData.equals(TRAILERS_KEY)) {
+                        mTrailers.clear();
+                        JSONObject trailersJson = new JSONObject(trailersData);
+                        int id = trailersJson.getInt("id");
+                        JSONArray results = trailersJson.getJSONArray("results");
+                        for (int i = 0; i < results.length(); i++) {
+                            JSONObject currentObj = results.getJSONObject(i);
+                            MovieTrailer tempTrailer = new MovieTrailer(currentObj);
+                            Log.d("fart", "trailer: " + tempTrailer.getName());
+                            mTrailers.add(tempTrailer);
+                        }
                     }
 
                     //Tried numerous ways of arranging the views, trying various attributes and values in the xml layout,
                     // but nothing was causing the height to expand. So, this is increasing the view height, but not too much.
                     mTrailersList.setBackgroundColor(Color.parseColor("#dd5555"));
-                    mTrailersList.getLayoutParams().height = results.length() * getResources().getInteger(R.integer.heightPerRow);
-                    if(results.length() > 4)
+                    mTrailersList.getLayoutParams().height = mTrailers.size() * getResources().getInteger(R.integer.heightPerRow);
+                    if(mTrailers.size() > 4)
                         mTrailersList.getLayoutParams().height = 4 * getResources().getInteger(R.integer.heightPerRow);
 
                     mTrailersAdapter.notifyDataSetChanged();

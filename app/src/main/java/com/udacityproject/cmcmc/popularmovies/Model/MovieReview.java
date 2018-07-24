@@ -12,7 +12,7 @@ public class MovieReview implements Parcelable{
     private String content;
     private String url;
 
-    MovieReview(Parcel in){
+    private MovieReview(Parcel in){
         this.id = in.readString();
         this.author = in.readString();
         this.content = in.readString();
