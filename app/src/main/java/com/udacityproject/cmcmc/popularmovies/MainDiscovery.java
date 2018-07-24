@@ -3,14 +3,15 @@ package com.udacityproject.cmcmc.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Movie;
+//import android.database.sqlite.SQLiteDatabase;
+//import android.graphics.Movie;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+//import android.util.Log;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,7 +22,7 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import com.udacityproject.cmcmc.popularmovies.Model.MovieInfo;
-import com.udacityproject.cmcmc.popularmovies.database.FavoritesContract;
+//import com.udacityproject.cmcmc.popularmovies.database.FavoritesContract;
 import com.udacityproject.cmcmc.popularmovies.database.FavoritesContract.FavoritesEntry;
 import com.udacityproject.cmcmc.popularmovies.database.FavoritesDbHelper;
 
@@ -35,16 +36,19 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
+//import java.util.List;
 import java.util.Scanner;
 
 public class MainDiscovery extends AppCompatActivity {
 
-    private GridView mMoviePosters;
-    private List<MovieInfo> mMovies;
+    private ArrayList<MovieInfo> mMovies;
     private MoviePostersAdapter mMoviePostersAdapter;
-    private SQLiteDatabase mFavoritesDb;
+//    private SQLiteDatabase mFavoritesDb;
     private String mSortMethod;
+    private String mSelectionChosen;
+    private static final String MOVIES_KEY = "movies arraylist (parcelable) key";
+    private static final String SORT_METHOD = "the sorting method selected key";
+    private static final String SELECTION_CHOSEN = "Sort selection chosen key";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +56,23 @@ public class MainDiscovery extends AppCompatActivity {
         setContentView(R.layout.activity_main_discovery);
 
         // database setup
-        FavoritesDbHelper dbHelper = new FavoritesDbHelper(this);
-        mFavoritesDb = dbHelper.getReadableDatabase();
+//        FavoritesDbHelper dbHelper = new FavoritesDbHelper(this);
+//        mFavoritesDb = dbHelper.getReadableDatabase();
 
         mMovies = new ArrayList<MovieInfo>();
+        if(savedInstanceState == null){
+            mMovies = new ArrayList<MovieInfo>();
+            Log.d("fart","savedInstanceState is null");
+        }else if(savedInstanceState.containsKey(MOVIES_KEY)){
+            Log.d("fart","Loading from savedInstanceState");
+            mMovies = savedInstanceState.getParcelableArrayList(MOVIES_KEY);
+        }else{
+            Log.d("fart", "savedInstanceState is not null, AND it doesn't have a movies_key");
+        }
         mMoviePostersAdapter = new MoviePostersAdapter(this, mMovies, getFavoritesFromDb(), false);
 
-        mMoviePosters = (GridView)findViewById(R.id.gv_moviePosters);
+        GridView mMoviePosters;
+        mMoviePosters = findViewById(R.id.gv_moviePosters);
         mMoviePosters.setAdapter(mMoviePostersAdapter);
         mMoviePosters.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -68,13 +82,14 @@ public class MainDiscovery extends AppCompatActivity {
             }
         });
 
-        if(savedInstanceState != null){
-            mSortMethod = savedInstanceState.getString("sortMethod");
+        if(savedInstanceState != null) {
+            mSortMethod = savedInstanceState.getString(SORT_METHOD);
+            mSelectionChosen = savedInstanceState.getString(SELECTION_CHOSEN);
         }
-
         //Start by loading based on most popular
-        if(mSortMethod == null || mSortMethod.isEmpty())
+        if(mSortMethod == null || mSortMethod.isEmpty()) {
             mSortMethod = this.getString(R.string.get_most_popular);
+        }
 
         loadMovieData(mSortMethod);
     }
@@ -82,7 +97,9 @@ public class MainDiscovery extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
-        state.putString("sortMethod", mSortMethod);
+        state.putParcelableArrayList(MOVIES_KEY, mMovies);
+        state.putString(SORT_METHOD, mSortMethod);
+        state.putString(SELECTION_CHOSEN, mSelectionChosen);
     }
 
     @Override
@@ -103,28 +120,40 @@ public class MainDiscovery extends AppCompatActivity {
                 return null;
             }
             if(params[0].equals(MainDiscovery.this.getString(R.string.load_db_favorites))){
-//                Log.d("fart", "Load from database!");
+                // If the parameter is to load from the DB, skip the network code
                 return params[0];
             }else{
                 mMoviePostersAdapter.useFavoritesDb(false);
             }
 
+            // Before bothering to do networking, see if there are already movies loaded
+            if(mMovies.size() > 0) {
+                Log.d("fart", "mMovies is currently populated");
+                // If the current sort method is the same as the selection, use the existing data
+                if(mSortMethod.equals(mSelectionChosen)) {
+                    Log.d("fart", "movies will NOT pull from network");
+                    return MOVIES_KEY;
+                }
+            }else{
+                // No movies are loaded, so the network calls will happen.
+                Log.d("fart", "pull movie data from network");
+            }
+
             try {
                 ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+                if(connectivityManager != null) {
+                    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 
-                if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
-                    String sortMethod = params[0];
-                    URL moviesRequestUrl = buildSortAPIUrl(sortMethod);
+                    if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
+                        String sortMethod = params[0];
+                        URL moviesRequestUrl = buildSortAPIUrl(sortMethod);
 
-                    try {
-                        String moviesResponse = getResponseFromUrl(moviesRequestUrl);
-
-                        return moviesResponse;
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
+                        try {
+                            return getResponseFromUrl(moviesRequestUrl);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
                     }
                 }
             }catch(NullPointerException e){
@@ -139,25 +168,37 @@ public class MainDiscovery extends AppCompatActivity {
                 if(movieData.equals(MainDiscovery.this.getString(R.string.load_db_favorites))){
 //                    Log.d("fart", "Movie Posters Adapter should load based off of DB list of movie_ids");
                     mMoviePostersAdapter.useFavoritesDb(true);
-                    mMoviePostersAdapter.swapCursor(getFavoritesFromDb());
+                    if(mMovies.size() > 0){
+                        Log.d("fart", "mMovies is populated already.");
+                    }else {
+                        mMoviePostersAdapter.swapCursor(getFavoritesFromDb());
+                        mSortMethod = mSelectionChosen;
+                        Log.d("fart", "Changed to Favorites, or mMovies is empty. Should load from DB");
+                    }
                     mMoviePostersAdapter.notifyDataSetChanged();
                 }else {
-                    try {
-                        mMovies.clear();
-                        JSONObject movieJson = new JSONObject(movieData);
-                        int page = movieJson.getInt("page");
-                        int total_results = movieJson.getInt("total_results");
-                        int total_pages = movieJson.getInt("total_pages");
-                        JSONArray results = movieJson.getJSONArray("results");
-                        for (int i = 0; i < results.length(); i++) {
-                            JSONObject currentObj = results.getJSONObject(i);
-                            MovieInfo tempMovie = new MovieInfo(currentObj);
-                            mMovies.add(tempMovie);
-                        }
+                    // In this case it is either JSON data, or the MOVIES_KEY to instruct to use the current movies data
+                    if(movieData.equals(MOVIES_KEY))
                         mMoviePostersAdapter.notifyDataSetChanged();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Toast.makeText(MainDiscovery.this, "Data Issue", Toast.LENGTH_LONG).show();
+                    else {
+                        try {
+                            mMovies.clear();
+                            JSONObject movieJson = new JSONObject(movieData);
+                            int page = movieJson.getInt("page");
+                            int total_results = movieJson.getInt("total_results");
+                            int total_pages = movieJson.getInt("total_pages");
+                            JSONArray results = movieJson.getJSONArray("results");
+                            for (int i = 0; i < results.length(); i++) {
+                                JSONObject currentObj = results.getJSONObject(i);
+                                MovieInfo tempMovie = new MovieInfo(currentObj);
+                                mMovies.add(tempMovie);
+                            }
+                            mSortMethod = mSelectionChosen;
+                            mMoviePostersAdapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(MainDiscovery.this, "Data Issue", Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
             }
@@ -173,22 +214,34 @@ public class MainDiscovery extends AppCompatActivity {
         return true;
     }
 
+    // If the sort selected is the same as the current sort, do nothing.
+    // Otherwise, if it is different, set the selectionChosen to it,
+    // and send the selection to the data loader to determine how to load the data.
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.action_most_popular) {
-            mSortMethod = this.getString(R.string.get_most_popular);
-            loadMovieData(mSortMethod);
+            if(!mSortMethod.equals(this.getString(R.string.get_most_popular))) {
+                mSelectionChosen = this.getString(R.string.get_most_popular);
+                loadMovieData(mSelectionChosen);
+            }
+
             return true;
         }
         else if(id == R.id.action_highest_rated){
-            mSortMethod = this.getString(R.string.get_top_rated);
-            loadMovieData(mSortMethod);
+            if(!mSortMethod.equals(this.getString(R.string.get_top_rated))) {
+                mSelectionChosen = this.getString(R.string.get_top_rated);
+                loadMovieData(mSelectionChosen);
+            }
+
             return true;
         }
         else if(id == R.id.action_show_favorited){
-            mSortMethod = this.getString(R.string.load_db_favorites);
-            loadMovieData(mSortMethod);
+            if(!mSortMethod.equals(this.getString(R.string.load_db_favorites))) {
+                mSelectionChosen = this.getString(R.string.load_db_favorites);
+                loadMovieData(mSelectionChosen);
+            }
+
             return true;
         }
 

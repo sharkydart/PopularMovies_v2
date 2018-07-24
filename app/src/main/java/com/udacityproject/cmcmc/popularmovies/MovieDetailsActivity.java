@@ -207,18 +207,19 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
             try {
                 ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+                if(connectivityManager != null) {
+                    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 
-                if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
-                    String pathForFetch = params[0];
-                    URL fetchRequestUrl = buildFetchAPIUrl(pathForFetch);
+                    if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
+                        String pathForFetch = params[0];
+                        URL fetchRequestUrl = buildFetchAPIUrl(pathForFetch);
 
-                    try {
-                        String queryResponse = MovieDetailsActivity.getResponseFromUrl(fetchRequestUrl);
-                        return queryResponse;
-                    }catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
+                        try {
+                            return MovieDetailsActivity.getResponseFromUrl(fetchRequestUrl);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
                     }
                 }
             }catch(NullPointerException e) {e.printStackTrace();}
@@ -236,7 +237,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                         for (int i = 0; i < results.length(); i++) {
                             JSONObject currentObj = results.getJSONObject(i);
                             MovieTrailer tempTrailer = new MovieTrailer(currentObj);
-                            Log.d("fart", "trailer: " + tempTrailer.getName());
+//                            Log.d("fart", "trailer: " + tempTrailer.getName());
                             mTrailers.add(tempTrailer);
                         }
                     }
@@ -266,20 +267,24 @@ public class MovieDetailsActivity extends AppCompatActivity {
         protected String doInBackground(String... params) {
             if (params.length == 0) {return null;}
 
+            if(mReviews.size() > 0)
+                return REVIEWS_KEY;
+
             try {
                 ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+                if(connectivityManager != null) {
+                    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 
-                if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
-                    String pathForFetch = params[0];
-                    URL fetchRequestUrl = buildFetchAPIUrl(pathForFetch);
+                    if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
+                        String pathForFetch = params[0];
+                        URL fetchRequestUrl = buildFetchAPIUrl(pathForFetch);
 
-                    try {
-                        String queryResponse = MovieDetailsActivity.getResponseFromUrl(fetchRequestUrl);
-                        return queryResponse;
-                    }catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
+                        try {
+                            return MovieDetailsActivity.getResponseFromUrl(fetchRequestUrl);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            return null;
+                        }
                     }
                 }
             }catch(NullPointerException e) {e.printStackTrace();}
@@ -289,23 +294,25 @@ public class MovieDetailsActivity extends AppCompatActivity {
         protected void onPostExecute(String reviewsData) {
             if (reviewsData != null) {
                 try {
-                    mReviews.clear();
-                    JSONObject reviewsJson = new JSONObject(reviewsData);
-                    int id = reviewsJson.getInt("id");
-                    int page = reviewsJson.getInt("page");
-                    JSONArray results = reviewsJson.getJSONArray("results");
-                    for(int i=0; i<results.length(); i++) {
-                        JSONObject currentObj = results.getJSONObject(i);
-                        MovieReview tempReview = new MovieReview(currentObj);
-                        Log.d("fart", "review by: " + tempReview.getAuthor());
-                        mReviews.add(tempReview);
+                    if(!reviewsData.equals(REVIEWS_KEY)) {
+                        mReviews.clear();
+                        JSONObject reviewsJson = new JSONObject(reviewsData);
+                        int id = reviewsJson.getInt("id");
+                        int page = reviewsJson.getInt("page");
+                        JSONArray results = reviewsJson.getJSONArray("results");
+                        for (int i = 0; i < results.length(); i++) {
+                            JSONObject currentObj = results.getJSONObject(i);
+                            MovieReview tempReview = new MovieReview(currentObj);
+//                            Log.d("fart", "review by: " + tempReview.getAuthor());
+                            mReviews.add(tempReview);
+                        }
                     }
-                    int total_pages = reviewsJson.getInt("total_pages");
-                    int total_results = reviewsJson.getInt("total_results");
+//                    int total_pages = reviewsJson.getInt("total_pages");
+//                    int total_results = reviewsJson.getInt("total_results");
 
                     //Tried numerous ways of arranging the views, trying various attributes and values in the xml layout,
                     // but nothing was causing the height to expand. So, this is increasing the view height, but not too much.
-                    if(results.length() > 0)
+                    if(mReviews.size() > 0)
                         mReviewsList.getLayoutParams().height = 3 * getResources().getInteger(R.integer.heightPerRow);
 
                     mReviewsAdapter.notifyDataSetChanged();
@@ -340,7 +347,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         URL url = null;
         try {
-            Log.d("fart", "url: " + builtUri.toString());
+//            Log.d("fart", "url: " + builtUri.toString());
             url = new URL(builtUri.toString());
         } catch (MalformedURLException e) {
             e.printStackTrace();

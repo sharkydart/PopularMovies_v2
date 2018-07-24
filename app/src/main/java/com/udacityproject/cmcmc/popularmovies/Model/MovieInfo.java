@@ -22,7 +22,7 @@ public class MovieInfo implements Parcelable{
     private String poster_path;
     private String original_language;
     private String original_title;
-    private List<Integer> genre_ids;
+    private ArrayList<Integer> genre_ids;
     private String backdrop_path;
     private boolean adult;
     private String overview;
@@ -43,7 +43,7 @@ public class MovieInfo implements Parcelable{
         this.title = in.readString();
         this.title = in.readString();
         this.title = in.readString();
-        List<Integer> genreIds_temp = new ArrayList<>();
+        ArrayList<Integer> genreIds_temp = new ArrayList<>();
         in.readList(genreIds_temp, ElementType.class.getClassLoader());
         this.setGenre_ids(genreIds_temp);
     }
@@ -100,7 +100,7 @@ public class MovieInfo implements Parcelable{
                 this.poster_path = jsonMovieInfo.getString("poster_path");
                 this.original_language = jsonMovieInfo.getString("original_language");
                 this.original_title = jsonMovieInfo.getString("original_title");
-                List<Integer> genreIdsList = new ArrayList<Integer>();
+                ArrayList<Integer> genreIdsList = new ArrayList<Integer>();
                 JSONArray tempArray = jsonMovieInfo.getJSONArray("genre_ids");
                 for(int i = 0; i < tempArray.length(); i++) {
                     genreIdsList.add(tempArray.getInt(i));
@@ -192,7 +192,7 @@ public class MovieInfo implements Parcelable{
         return genre_ids;
     }
 
-    public void setGenre_ids(List<Integer> genre_ids) {
+    public void setGenre_ids(ArrayList<Integer> genre_ids) {
         this.genre_ids = genre_ids;
     }
 
