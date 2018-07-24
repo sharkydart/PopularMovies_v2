@@ -89,6 +89,7 @@ public class MainDiscovery extends AppCompatActivity {
         //Start by loading based on most popular
         if(mSortMethod == null || mSortMethod.isEmpty()) {
             mSortMethod = this.getString(R.string.get_most_popular);
+            mSelectionChosen = "start";
         }
 
         loadMovieData(mSortMethod);
