@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -70,6 +71,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private String mMoviePosterPath;
     private String mMovieOverview;
     private ListView mTrailersList;
+    private ListView mReviewsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,6 +174,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     android.R.layout.simple_list_item_1, mReviews);
             ListView reviewsList = findViewById(R.id.reviews_listview);
             reviewsList.setAdapter(mReviewsAdapter);
+            mReviewsList = reviewsList;
 
             // startFetchingReviews
             String reviewPath = getString(R.string.get_movie) + Integer.toString(mMovieId) + getString(R.string.get_movie_reviews);
@@ -220,6 +223,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
                     //Tried numerous ways of arranging the views, trying various attributes and values in the xml layout,
                     // but nothing was causing the height to expand. So, this is increasing the view height, but not too much.
+                    mTrailersList.setBackgroundColor(Color.parseColor("#dd5555"));
                     mTrailersList.getLayoutParams().height = results.length() * getResources().getInteger(R.integer.heightPerRow);
                     if(results.length() > 4)
                         mTrailersList.getLayoutParams().height = 4 * getResources().getInteger(R.integer.heightPerRow);
@@ -278,6 +282,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     }
                     int total_pages = reviewsJson.getInt("total_pages");
                     int total_results = reviewsJson.getInt("total_results");
+
+                    //Tried numerous ways of arranging the views, trying various attributes and values in the xml layout,
+                    // but nothing was causing the height to expand. So, this is increasing the view height, but not too much.
+                    if(results.length() > 0)
+                        mReviewsList.getLayoutParams().height = 3 * getResources().getInteger(R.integer.heightPerRow);
+
                     mReviewsAdapter.notifyDataSetChanged();
                 }catch (JSONException e){
                     e.printStackTrace();

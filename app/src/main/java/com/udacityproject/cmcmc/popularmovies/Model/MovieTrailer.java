@@ -16,6 +16,7 @@ public class MovieTrailer implements Parcelable{
     private int size;
     private String type;
 
+    //Parcelable Stuff
     public MovieTrailer(Parcel in){
         String[] strData = new String[7];
         in.readStringArray(strData);
@@ -27,20 +28,6 @@ public class MovieTrailer implements Parcelable{
         this.site = strData[5];
         this.type = strData[6];
         this.size = in.readInt();
-    }
-    public MovieTrailer(String id, String iso_639_1, String iso_3166_1, String key, String name, String site, String type, int size) {
-        this.id = id;
-        this.iso_639_1 = iso_639_1;
-        this.iso_3166_1 = iso_3166_1;
-        this.key = key;
-        this.name = name;
-        this.site = site;
-        this.type = type;
-        this.size = size;
-    }
-    @Override
-    public int describeContents(){
-        return 0;
     }
     @Override
     public void writeToParcel(Parcel dest, int flags){
@@ -55,6 +42,11 @@ public class MovieTrailer implements Parcelable{
         });
         dest.writeInt(this.size);
     }
+    @Override
+    public int describeContents(){
+        return 0;
+    }
+
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator(){
         public MovieTrailer createFromParcel(Parcel in){
             return new MovieTrailer(in);
@@ -63,6 +55,18 @@ public class MovieTrailer implements Parcelable{
             return new MovieTrailer[size];
         }
     };
+    //end parcelable stuff
+
+    public MovieTrailer(String id, String iso_639_1, String iso_3166_1, String key, String name, String site, String type, int size) {
+        this.id = id;
+        this.iso_639_1 = iso_639_1;
+        this.iso_3166_1 = iso_3166_1;
+        this.key = key;
+        this.name = name;
+        this.site = site;
+        this.type = type;
+        this.size = size;
+    }
     public MovieTrailer(String id){
         this.id = id;
     }

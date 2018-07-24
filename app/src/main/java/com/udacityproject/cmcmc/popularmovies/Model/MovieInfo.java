@@ -7,10 +7,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MovieInfo{
+public class MovieInfo implements Parcelable{
     private int _rowId;
     private int vote_count;
     private int id;
@@ -26,6 +27,58 @@ public class MovieInfo{
     private boolean adult;
     private String overview;
     private String release_date;
+
+    public MovieInfo(Parcel in){
+        this._rowId = in.readInt();
+        this.vote_count = in.readInt();
+        this.id = in.readInt();
+        this.video = (in.readInt() == 1);
+        this.adult = (in.readInt() == 1);
+        this.vote_average = in.readDouble();
+        this.popularity = in.readDouble();
+        this.title = in.readString();
+        this.title = in.readString();
+        this.title = in.readString();
+        this.title = in.readString();
+        this.title = in.readString();
+        this.title = in.readString();
+        this.title = in.readString();
+        List<Integer> genreIds_temp = new ArrayList<>();
+        in.readList(genreIds_temp, ElementType.class.getClassLoader());
+        this.setGenre_ids(genreIds_temp);
+    }
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(_rowId);
+        dest.writeInt(vote_count);
+        dest.writeInt(id);
+        dest.writeInt(video ? 1 : 0);
+        dest.writeInt(adult ? 1 : 0);
+        dest.writeDouble(vote_average);
+        dest.writeDouble(popularity);
+        dest.writeString(title);
+        dest.writeString(poster_path);
+        dest.writeString(original_language);
+        dest.writeString(original_title);
+        dest.writeString(backdrop_path);
+        dest.writeString(overview);
+        dest.writeString(release_date);
+        dest.writeList(genre_ids);
+    }
+    static final Parcelable.Creator<MovieInfo> CREATOR = new Parcelable.Creator<MovieInfo>(){
+        @Override
+        public MovieInfo createFromParcel(Parcel in) {
+            return new MovieInfo(in);
+        }
+        @Override
+        public MovieInfo[] newArray(int size) {
+            return new MovieInfo[size];
+        }
+    };
 
     public MovieInfo(int id, double vote_average, String title, String poster_path, String overview, String release_date) {
         this.id = id;
@@ -182,4 +235,5 @@ public class MovieInfo{
     public void set_rowId(int _rowId) {
         this._rowId = _rowId;
     }
+
 }
