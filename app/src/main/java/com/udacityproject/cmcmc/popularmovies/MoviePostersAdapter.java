@@ -13,21 +13,22 @@ import com.udacityproject.cmcmc.popularmovies.Model.MovieInfo;
 import com.udacityproject.cmcmc.popularmovies.database.FavoritesContract;
 import com.udacityproject.cmcmc.popularmovies.database.FavoritesContract.FavoritesEntry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MoviePostersAdapter extends BaseAdapter {
     private final Context mContext;
-    private List<MovieInfo> mPosters;
+    private ArrayList<MovieInfo> mPosters;
     private boolean mFromDb;
     private Cursor mDBCursor;
 
-    public MoviePostersAdapter(Context theContext, List<MovieInfo> thePosters, Cursor theDbCursor, boolean fromDb){
+    public MoviePostersAdapter(Context theContext, ArrayList<MovieInfo> thePosters, Cursor theDbCursor, boolean fromDb){
         this.mContext = theContext;
         this.mPosters = thePosters;
         this.mDBCursor = theDbCursor;
         this.mFromDb = fromDb;
     }
-    public MoviePostersAdapter(Context theContext, List<MovieInfo> thePosters){
+    public MoviePostersAdapter(Context theContext, ArrayList<MovieInfo> thePosters){
         this.mContext = theContext;
         this.mPosters = thePosters;
     }
@@ -80,14 +81,16 @@ public class MoviePostersAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView samplePoster;
-        if(convertView == null){
+        ImageView samplePoster = (ImageView) convertView;
+        if(samplePoster == null) {
             samplePoster = new ImageView(mContext);
-            samplePoster.setScaleType(ImageView.ScaleType.FIT_START);
-            samplePoster.setAdjustViewBounds(true);
-        } else{
-            samplePoster = (ImageView) convertView;
         }
+        samplePoster.setScaleType(ImageView.ScaleType.FIT_START);
+        samplePoster.setAdjustViewBounds(true);
+
+//        else{
+//            samplePoster = (ImageView) convertView;
+//        }
         String imgApiBasePath = mContext.getResources().getString(R.string.base_url_images);
         String posterSize = mContext.getResources().getStringArray(R.array.poster_sizes)[4];
         String imgpath = imgApiBasePath + posterSize + ((MovieInfo)getItem(position)).getPoster_path();
@@ -95,6 +98,14 @@ public class MoviePostersAdapter extends BaseAdapter {
         Picasso.get()
                 .load(imgpath)
                 .into(samplePoster);
+
+        samplePoster.setId(position);
         return samplePoster;
+    }
+    public void setItems(ArrayList<MovieInfo> theItems){
+        this.mPosters = theItems;
+    }
+    public ArrayList<MovieInfo> getItems(){
+        return mPosters;
     }
 }
