@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 //import android.util.Log;
@@ -21,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
 import com.udacityproject.cmcmc.popularmovies.Model.MovieInfo;
 //import com.udacityproject.cmcmc.popularmovies.database.FavoritesContract;
 import com.udacityproject.cmcmc.popularmovies.database.FavoritesContract.FavoritesEntry;
@@ -50,6 +52,11 @@ public class MainDiscovery extends AppCompatActivity {
     private static final String SORT_METHOD = "the sorting method selected key";
     private static final String SELECTION_CHOSEN = "Sort selection chosen key";
     private static final String SELECTION_NONE = "nothing selected";
+    private static final String SCROLL_POSITION = "scroll to this position(key)";
+    private int mPosition;
+//    private static final String FIRST_VISIBLE = "scroll to this position(key)";
+//    private int mScrollTo;
+    private GridView mMoviePosters;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +80,7 @@ public class MainDiscovery extends AppCompatActivity {
         Log.d("fart", "73: [mMoviePostersAdapter init with mMovies]");
         mMoviePostersAdapter = new MoviePostersAdapter(this, mMovies, getFavoritesFromDb(), false);
 
-        GridView mMoviePosters;
+        //GridView mMoviePosters;
         mMoviePosters = findViewById(R.id.gv_moviePosters);
         mMoviePosters.setAdapter(mMoviePostersAdapter);
         mMoviePosters.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -81,10 +88,13 @@ public class MainDiscovery extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 launchMovieDetailsActivity(position);
                 //load detail view from here, sending/setting movie info selected
+                mPosition = position;
             }
         });
 
         if(savedInstanceState != null) {
+//            mScrollTo = savedInstanceState.getInt(FIRST_VISIBLE);
+            mPosition = savedInstanceState.getInt(SCROLL_POSITION);
             mSortMethod = savedInstanceState.getString(SORT_METHOD);
             mSelectionChosen = savedInstanceState.getString(SELECTION_CHOSEN);
         }
@@ -100,6 +110,8 @@ public class MainDiscovery extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
+        state.putInt(SCROLL_POSITION, mPosition);
+        //state.putInt(FIRST_VISIBLE, mMoviePosters.getFirstVisiblePosition());
         //save the items that are currently in the adapter
         state.putParcelableArrayList(MOVIES_KEY, mMoviePostersAdapter.getItems()); //used to be mMovies
         state.putString(SORT_METHOD, mSortMethod);
@@ -180,6 +192,10 @@ public class MainDiscovery extends AppCompatActivity {
                     }else {
                         Log.d("fart", "180: Adapter doesn't reflect Favorites, or is empty. Should load Favorites from DB");
                         mMoviePostersAdapter.swapCursor(getFavoritesFromDb());
+                        if(mPosition <= mMoviePostersAdapter.getCount()) {
+//                            mMoviePosters.setSelection(mScrollTo);
+                            mMoviePosters.smoothScrollToPosition(mPosition);
+                        }
                     }
                     Log.d("fart", "185: [Fresh FAVORITES shown in mMoviePostersAdapter]");
                     mMoviePostersAdapter.notifyDataSetChanged();
@@ -202,6 +218,10 @@ public class MainDiscovery extends AppCompatActivity {
                             Log.d("fart", "203: -- NOT Favorites avoided JSON parse --");
                         }
                         Log.d("fart", "205: [Fresh POPULAR/RATED shown in mMoviePostersAdapter]");
+                        if(mPosition <= mMoviePostersAdapter.getCount()) {
+//                            mMoviePosters.setSelection(mScrollTo);
+                            mMoviePosters.smoothScrollToPosition(mPosition);
+                        }
                         mMoviePostersAdapter.notifyDataSetChanged();
                     } catch (JSONException e) {
                         e.printStackTrace();

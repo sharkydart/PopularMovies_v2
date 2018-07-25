@@ -1,6 +1,7 @@
 package com.udacityproject.cmcmc.popularmovies;
 
 import android.content.Context;
+import android.content.Loader;
 import android.database.Cursor;
 import android.util.Log;
 import android.view.View;
@@ -108,4 +109,5 @@ public class MoviePostersAdapter extends BaseAdapter {
     public ArrayList<MovieInfo> getItems(){
         return mPosters;
     }
+
 }
