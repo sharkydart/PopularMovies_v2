@@ -84,14 +84,16 @@ public class MoviePostersAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageView samplePoster = (ImageView) convertView;
         if (samplePoster == null) {
+            Log.d("fart", "IMG["+position+"] is null. Creating new ImageView");
             samplePoster = new ImageView(mContext);
+            samplePoster.setScaleType(ImageView.ScaleType.FIT_START);
+            samplePoster.setAdjustViewBounds(true);
         }
-        samplePoster.setScaleType(ImageView.ScaleType.FIT_START);
-        samplePoster.setAdjustViewBounds(true);
 
         String imgApiBasePath = mContext.getResources().getString(R.string.base_url_images);
-        String posterSize = mContext.getResources().getStringArray(R.array.poster_sizes)[4];
+        String posterSize = mContext.getResources().getStringArray(R.array.poster_sizes)[3];
         String imgpath = imgApiBasePath + posterSize + ((MovieInfo) getItem(position)).getPoster_path();
+        Log.d("fart", "imgpath:"+ imgpath);
 
         Picasso.get()
                 .load(imgpath)
