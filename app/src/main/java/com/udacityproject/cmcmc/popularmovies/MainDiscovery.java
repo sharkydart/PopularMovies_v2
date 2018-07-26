@@ -56,6 +56,8 @@ public class MainDiscovery extends AppCompatActivity {
     private static final String SELECTION_NONE = "nothing selected";
     private static final String SCROLL_POSITION = "scroll to this position(key)";
     private int mPosition;
+    private static final String LIST_STATE = "grid view list state";
+    private Parcelable mListState = null;
 //    private static final String FIRST_VISIBLE = "scroll to this position(key)";
 //    private int mScrollTo;
     private GridView mMoviePosters;
@@ -64,6 +66,13 @@ public class MainDiscovery extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_discovery);
+
+        /*
+        Picasso.Builder builder = new Picasso.Builder(context);
+        Picasso picasso = builder.build() ;
+        ImageView imageId = (ImageView) findViewById(R.id.imageId) ;
+        picasso.load("URL").rotate(degrees).into(imageId) ;
+        * */
 
         // database setup
 //        FavoritesDbHelper dbHelper = new FavoritesDbHelper(this);
@@ -112,6 +121,8 @@ public class MainDiscovery extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
+        mListState = mMoviePosters.onSaveInstanceState();
+        state.putParcelable(LIST_STATE, mListState);
         state.putInt(SCROLL_POSITION, mPosition);
 //        state.putString(TITLE_KEY, mDesiredTitle);
         //state.putInt(FIRST_VISIBLE, mMoviePosters.getFirstVisiblePosition());
@@ -122,10 +133,20 @@ public class MainDiscovery extends AppCompatActivity {
     }
 
     @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        mListState = state.getParcelable(LIST_STATE);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 //        this.setTitle(mDesiredTitle);
         loadMovieData(mSortMethod);
+        if(mListState != null)
+            Log.d("fart","onResume - mListState has a gridview instance to restore (commented out)");
+//            mMoviePosters.onRestoreInstanceState(mListState);
+        mListState = null;
     }
 
     private void loadMovieData(String sortMethod) {
