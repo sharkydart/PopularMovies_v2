@@ -48,6 +48,8 @@ public class MainDiscovery extends AppCompatActivity {
 //    private SQLiteDatabase mFavoritesDb;
     private String mSortMethod;
     private String mSelectionChosen;
+//    private String mDesiredTitle;
+//    private static final String TITLE_KEY = "the desired title (key)";
     private static final String MOVIES_KEY = "movies arraylist (parcelable) key";
     private static final String SORT_METHOD = "the sorting method selected key";
     private static final String SELECTION_CHOSEN = "Sort selection chosen key";
@@ -111,6 +113,7 @@ public class MainDiscovery extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
         state.putInt(SCROLL_POSITION, mPosition);
+//        state.putString(TITLE_KEY, mDesiredTitle);
         //state.putInt(FIRST_VISIBLE, mMoviePosters.getFirstVisiblePosition());
         //save the items that are currently in the adapter
         state.putParcelableArrayList(MOVIES_KEY, mMoviePostersAdapter.getItems()); //used to be mMovies
@@ -121,6 +124,8 @@ public class MainDiscovery extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+//        this.setTitle(mDesiredTitle);
+        loadMovieData(mSortMethod);
     }
 
     private void loadMovieData(String sortMethod) {
@@ -186,16 +191,10 @@ public class MainDiscovery extends AppCompatActivity {
                 if(movieData.equals(MainDiscovery.this.getString(R.string.load_db_favorites))){
                     Log.d("fart", "174: Movie Posters Adapter should load Favorites");
                     mMoviePostersAdapter.useFavoritesDb(true);
-                    if(mMoviePostersAdapter.getItems().size() > 0 && mSortMethod.equals(movieData)){
-                        Log.d("fart", "177: mMoviePostersAdapter is populated already, and mSortMethod = '" + mSortMethod + "'");
-                        Log.d("fart", "(177) -- Favorites avoided DB pull --");
-                    }else {
-                        Log.d("fart", "180: Adapter doesn't reflect Favorites, or is empty. Should load Favorites from DB");
-                        mMoviePostersAdapter.swapCursor(getFavoritesFromDb());
-                        if(mPosition <= mMoviePostersAdapter.getCount()) {
+                    mMoviePostersAdapter.swapCursor(getFavoritesFromDb());
+                    if(mPosition <= mMoviePostersAdapter.getCount()) {
 //                            mMoviePosters.setSelection(mScrollTo);
-                            mMoviePosters.smoothScrollToPosition(mPosition);
-                        }
+                        mMoviePosters.smoothScrollToPosition(mPosition);
                     }
                     Log.d("fart", "185: [Fresh FAVORITES shown in mMoviePostersAdapter]");
                     mMoviePostersAdapter.notifyDataSetChanged();
@@ -255,6 +254,9 @@ public class MainDiscovery extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_most_popular) {
+//            this.setTitle("Popular Movies");
+//            mDesiredTitle = this.getTitle().toString();
+
             if(!mSortMethod.equals(this.getString(R.string.get_most_popular))) {
                 mSelectionChosen = this.getString(R.string.get_most_popular);
                 loadMovieData(mSelectionChosen);
@@ -263,6 +265,9 @@ public class MainDiscovery extends AppCompatActivity {
             return true;
         }
         else if(id == R.id.action_highest_rated){
+//            this.setTitle("Highest Rated");
+//            mDesiredTitle = this.getTitle().toString();
+
             if(!mSortMethod.equals(this.getString(R.string.get_top_rated))) {
                 mSelectionChosen = this.getString(R.string.get_top_rated);
                 loadMovieData(mSelectionChosen);
@@ -271,6 +276,9 @@ public class MainDiscovery extends AppCompatActivity {
             return true;
         }
         else if(id == R.id.action_show_favorited){
+//            this.setTitle("Favorited");
+//            mDesiredTitle = this.getTitle().toString();
+
             if(!mSortMethod.equals(this.getString(R.string.load_db_favorites))) {
                 mSelectionChosen = this.getString(R.string.load_db_favorites);
                 loadMovieData(mSelectionChosen);
